@@ -1,0 +1,27 @@
+{
+  "validUser": {
+    "email": "user@test.com",
+    "password": "Password123!"
+  },
+  "mfaUser": {
+    "email": "mfa@test.com",
+    "password": "Password123!",
+    "mfaCode": "123456"
+  },
+  "lockedUser": {
+    "email": "locked@test.com",
+    "password": "Password123!"
+  },
+  "unverifiedUser": {
+    "email": "unverified@test.com",
+    "password": "Password123!"
+  },
+  "expiredPasswordUser": {
+    "email": "expired@test.com",
+    "password": "Password123!"
+  },
+  "invalidUser": {
+    "email": "invalid@test.com",
+    "password": "wrongpassword"
+  }
+}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cypress Test App</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-box">
+            <h1>Dashboard</h1>
+            <p class="welcome-message" data-cy="welcome-message">Welcome, <span id="user-email"></span>!</p>
+
+            <div class="dashboard-info">
+                <p>Login successful! You have accessed the protected dashboard.</p>
+                <p><strong>Session Type:</strong> <span id="session-type" data-cy="session-type"></span></p>
+                <p><strong>Login Time:</strong> <span id="login-time" data-cy="login-time"></span></p>
+            </div>
+
+            <button class="btn-login" id="logout-btn" data-cy="logout-button">Logout</button>
+        </div>
+    </div>
+
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
