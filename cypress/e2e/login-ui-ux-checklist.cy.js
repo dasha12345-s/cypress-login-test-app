@@ -171,9 +171,69 @@ describe('Login UI/UX Tests', () => {
             cy.focused()
                 .should('have.attr', 'data-cy', 'login-button')
         })
-        it('should submit form with Enter key in email field',() => {
+        it('should submit form with Enter key in login field', () => {
             cy.get('[data-cy="email-input"]')
                 .type('user@test.com{enter}')
+            cy.get('[data-cy="password-input"]')
+                .type('Password123!{enter}')
+            cy.get('[data-cy="login-button"]')
+                .should('exist')
+        })
+    })
+
+    describe('Autofill and Remember me', () => {
+        it('should display "Remember me" checkbox', () => {
+            cy.get('[data-cy="remember-me"]')
+                .should('be.visible')
+        })
+        it('should display "Remember me" label', () => {
+            cy.contains('Remember me').should('be.visible')
+        })
+        it('should be unchecked by default', () => {
+            cy.get('[data-cy="remember-me"]')
+                .should('not.be.checked')
+        })
+        it('should allow checking the checkbox', () => {
+            cy.get('[data-cy="remember-me"]')
+                .check()
+            cy.get('[data-cy="remember-me"]')
+                .should('be.checked')
+        })
+        it('should allow unchecking the checkbox', () => {
+            cy.get('[data-cy="remember-me"]')
+                .check()
+                .uncheck()
+            cy.get('[data-cy="remember-me"]')
+                .should('not.be.checked')
+        })
+    })
+    describe('Copy/paste in password field', () => {
+        const password = 'ReallyStrongPassword'
+
+        it('should allow pasting password', () => {
+            cy.get('[data-cy="password-input"]')
+                .invoke('val', password)
+                .should('have.value', password)
+        })
+        it('should allow typing and clearing password', () => {
+            cy.get('[data-cy="password-input"]')
+                .type('ThePassword')
+                .should('have.value', 'ThePassword')
+                .clear()
+                .should('have.value', '')
+        })
+        it('should allow selecting all text in password field', () => {
+            cy.get('[data-cy="password-input"]')
+                .type(password)
+                .type('{selectall}')
+                .type('EvenStrongerPassword')
+                .should('have.value', 'EvenStrongerPassword')
+        })
+        it('should allow backspace in password field', () => {
+            cy.get('[data-cy="password-input"]')
+                .type('NewTest123')
+                .type('{backspace}{backspace}{backspace}')
+                .should('have.value', 'NewTest')
         })
     })
 })
