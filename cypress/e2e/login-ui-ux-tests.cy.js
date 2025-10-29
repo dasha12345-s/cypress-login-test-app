@@ -316,7 +316,7 @@ describe('Login UI/UX Tests', () => {
         const wrongPassword = 'WrongPass123';
 
         it('should display CAPTCHA after 3 failed attempts', () => {
-            for (let i = 0; i < 3; i++){
+            for (let i = 0; i < 3; i++) {
                 cy.get('[data-cy="email-input"]')
                     .clear()
                     .type(email)
@@ -361,7 +361,7 @@ describe('Login UI/UX Tests', () => {
             cy.get('h1').should('have.css', 'font-size', '24px')
         })
     })
-    
+
     describe('Mobile touch targets', () => {
         it('should have tappable buttons on mobile', () => {
             cy.viewport('iphone-x')
@@ -380,6 +380,41 @@ describe('Login UI/UX Tests', () => {
                 .click()
             cy.get('[data-cy="remember-me"]')
                 .should('be.checked')
+        })
+    })
+
+    describe('Loading indicator', () => {
+        it('should display loading spinner during login', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('user@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('Password123!')
+            cy.get('[data-cy="login-button"]')
+                .click()
+
+            cy.get('#btn-spinner')
+                .should('be.visible')
+        })
+        it('should hide button text while loading', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('user@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('Password123!')
+            cy.get('[data-cy="login-button"]')
+                .click()
+
+            cy.get('#btn-text')
+                .should('not.be.visible')
+        })
+        it('should disable login button during loading', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('user@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('Password123!')
+            cy.get('[data-cy="login-button"]')
+
+            cy.get('[data-cy="login-button"]')
+                .should('be.disabled')
         })
     })
 })
