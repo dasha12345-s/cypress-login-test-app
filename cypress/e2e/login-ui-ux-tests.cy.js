@@ -412,7 +412,8 @@ describe('Login UI/UX Tests', () => {
             cy.get('[data-cy="password-input"]')
                 .type('Password123!')
             cy.get('[data-cy="login-button"]')
-
+                .click()
+                
             cy.get('[data-cy="login-button"]')
                 .should('be.disabled')
         })
