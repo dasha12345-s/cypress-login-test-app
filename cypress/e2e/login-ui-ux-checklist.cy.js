@@ -54,12 +54,12 @@ describe('Login UI/UX Tests', () => {
             cy.get('[class="modal-content"]')
                 .should('not.be.visible')
         })
-    })
-    it('should display "Sign up" link with correct href', () => {
-        cy.get('[data-cy="signup-link"]')
-            .should('be.visible')
-            .and('contain', 'Sign up')
-            .and('have.attr', 'href', 'pages/signup.html')
+        it('should display "Sign up" link with correct href', () => {
+            cy.get('[data-cy="signup-link"]')
+                .should('be.visible')
+                .and('contain', 'Sign up')
+                .and('have.attr', 'href', 'pages/signup.html')
+        })
     })
 
     describe('Consistent font, colors, and spacing', () => {
@@ -100,7 +100,6 @@ describe('Login UI/UX Tests', () => {
         })
         it('should have email type attribute', () => {
             cy.get('[data-cy="email-input"]')
-                .type('user@example.com')
                 .should('have.attr', 'type', 'email')
         })
         it('should be required field', () => {
@@ -207,6 +206,7 @@ describe('Login UI/UX Tests', () => {
                 .should('not.be.checked')
         })
     })
+
     describe('Copy/paste in password field', () => {
         const password = 'ReallyStrongPassword'
 
@@ -234,6 +234,103 @@ describe('Login UI/UX Tests', () => {
                 .type('NewTest123')
                 .type('{backspace}{backspace}{backspace}')
                 .should('have.value', 'NewTest')
+        })
+    })
+
+    describe('Inline validation - empty fields', () => {
+        it('should prevent submission with empty fields', () => {
+            cy.get('[data-cy="login-button"]')
+                .click()
+            cy.url().should('not.include', 'dashboard')
+        })
+    })
+
+    describe('Error message clarity', () => {
+        it('should display error message for invalid login', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('wrong@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('wrongpassword')
+            cy.get('[data-cy="login-button"]')
+                .click()
+
+            cy.get('[data-cy="alert-error"]')
+                .should('be.visible')
+                .and('contain', 'Invalid email or password')
+        })
+        it('should use red styling for error messages', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('wrong@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('wrongpassword')
+            cy.get('[data-cy="login-button"]')
+                .click()
+
+            cy.get('[data-cy="alert-error"]')
+                .should('have.css', 'color', 'rgb(204, 51, 51)')
+        })
+        it('should display success message after valid login', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('user@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('Password123!')
+            cy.get('[data-cy="login-button"]')
+                .click()
+
+            cy.get('[data-cy="alert-success"]')
+                .should('be.visible')
+                .and('contain', 'Login successful')
+        })
+    })
+
+    describe('Generic error - invalid credentials', () => {
+        it('should show generic error for wrong email', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('nonexistent@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('Password123!')
+            cy.get('[data-cy="login-button"]')
+                .click()
+
+            cy.get('[data-cy="alert-error"]')
+                .should('be.visible')
+                .and('contain', 'Invalid email or password')
+                .and('not.contain', 'user not found')
+        })
+        it('should show generic error for wrong password', () => {
+            cy.get('[data-cy="email-input"]')
+                .type('user@test.com')
+            cy.get('[data-cy="password-input"]')
+                .type('WrongPassword!')
+            cy.get('[data-cy="login-button"]')
+                .click()
+
+            cy.get('[data-cy="alert-error"]')
+                .should('be.visible')
+                .and('contain', 'Invalid email or password')
+        })
+    })
+
+    describe('Lockout/CAPTCHA UI tests', () => {
+        const email = 'user@test.com';
+        const wrongPassword = 'WrongPass123';
+
+        it('should display CAPTCHA after 3 failed attempts', () => {
+            for (let i = 0; i < 3; i++){
+                cy.get('[data-cy="email-input"]')
+                    .clear()
+                    .type(email)
+                cy.get('[data-cy="password-input"]')
+                    .clear()
+                    .type(wrongPassword)
+                cy.get('[data-cy="login-button"]')
+                    .click()
+                cy.wait(1000)
+            }
+            cy.get('[data-cy="captcha-display"]')
+                .should('be.visible')
+            cy.get('[data-cy="alert-warning"]')
+                .should('contain', 'Too many failed attempts')
         })
     })
 })
