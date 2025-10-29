@@ -333,4 +333,53 @@ describe('Login UI/UX Tests', () => {
                 .should('contain', 'Too many failed attempts')
         })
     })
+
+    describe('Responsive layout', () => {
+        it('should display correctly on tablet', () => {
+            cy.viewport(1280, 720)
+            cy.get('.login-box')
+                .should('be.visible')
+        })
+        it('should display correctly on tablet', () => {
+            cy.viewport('ipad-2')
+            cy.get('.login-box')
+                .should('be.visible')
+        })
+        it('should display correctly on mobile', () => {
+            cy.viewport('iphone-x')
+            cy.get('.login-box')
+                .should('be.visible')
+            cy.get('[data-cy="email-input"]')
+                .should('be.visible')
+            cy.get('[data-cy="password-input"]')
+                .should('be.visible')
+        })
+        it('should adjust styling for mobile screens', () => {
+            cy.viewport(375, 667)
+            cy.get('.login-box')
+                .should('have.css', 'padding', '25px')
+            cy.get('h1').should('have.css', 'font-size', '24px')
+        })
+    })
+    
+    describe('Mobile touch targets', () => {
+        it('should have tappable buttons on mobile', () => {
+            cy.viewport('iphone-x')
+            cy.get('[data-cy="login-button"]')
+                .should('be.visible')
+                .invoke('outerHeight')
+                .should('be.gte', 44)
+        })
+        it('should have adequate spacing between clickable elements', () => {
+            cy.viewport('iphone-x')
+            cy.get('[data-cy="remember-me"]')
+                .should('be.visible')
+            cy.get('[data-cy="forgot-password"]')
+                .should('be.visible')
+            cy.get('[data-cy="remember-me"]')
+                .click()
+            cy.get('[data-cy="remember-me"]')
+                .should('be.checked')
+        })
+    })
 })
