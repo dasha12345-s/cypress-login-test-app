@@ -311,29 +311,6 @@ describe('Login UI/UX Tests', () => {
         })
     })
 
-    describe('Lockout/CAPTCHA UI tests', () => {
-        const email = 'user@test.com';
-        const wrongPassword = 'WrongPass123';
-
-        it('should display CAPTCHA after 3 failed attempts', () => {
-            for (let i = 0; i < 3; i++) {
-                cy.get('[data-cy="email-input"]')
-                    .clear()
-                    .type(email)
-                cy.get('[data-cy="password-input"]')
-                    .clear()
-                    .type(wrongPassword)
-                cy.get('[data-cy="login-button"]')
-                    .click()
-                cy.wait(1000)
-            }
-            cy.get('[data-cy="captcha-display"]')
-                .should('be.visible')
-            cy.get('[data-cy="alert-warning"]')
-                .should('contain', 'Too many failed attempts')
-        })
-    })
-
     describe('Responsive layout', () => {
         it('should display correctly on tablet', () => {
             cy.viewport(1280, 720)

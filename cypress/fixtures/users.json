@@ -3,6 +3,10 @@
     "email": "user@test.com",
     "password": "Password123!"
   },
+  "5AttemptsUser": {
+    "email": "user5@test.com",
+    "password": "Password123!"
+  },
   "mfaUser": {
     "email": "mfa@test.com",
     "password": "Password123!",

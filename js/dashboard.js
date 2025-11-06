@@ -12,7 +12,7 @@ if (!isLoggedIn) {
 document.getElementById('user-email').textContent = userEmail;
 document.getElementById('session-type').textContent = sessionType === 'persistent' ? 'Persistent (Remember Me)' :
                                                        sessionType === 'session' ? 'Session Only' :
-                                                       sessionType.includes('sso') ? sessionType.toUpperCase() : 'Unknown';
+                                                       sessionType.toLowerCase().includes('sso') ? sessionType.toUpperCase() : 'Unknown';
 
 if (loginTime) {
     const loginDate = new Date(loginTime);

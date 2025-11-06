@@ -61,9 +61,14 @@ describe('Login Form - Flow Test Scenarios', () => {
 
   describe('UC-03: Locked Account', () => {
     it('should show locked account message', () => {
-      cy.login(users.lockedUser.email, users.lockedUser.password)
+      cy.get('[data-cy="email-input"]')
+        .type(users.lockedUser.email)
+      cy.get('[data-cy="password-input"]')
+        .type(users.lockedUser.password)
+      cy.get('[data-cy="login-button"]')
+        .click()
 
-      cy.checkAlert('Your account is locked')
+      cy.checkAlert('Your account is locked', 'warning')
       cy.url()
         .should('not.include', '/dashboard.html')
     })
@@ -71,7 +76,12 @@ describe('Login Form - Flow Test Scenarios', () => {
 
   describe('UC-04: Unverified Account', () => {
     it('should show email verification message', () => {
-      cy.login(users.unverifiedUser.email, users.unverifiedUser.password)
+      cy.get('[data-cy="email-input"]')
+        .type(users.unverifiedUser.email)
+      cy.get('[data-cy="password-input"]')
+        .type(users.unverifiedUser.password)
+      cy.get('[data-cy="login-button"]')
+        .click()
 
       cy.checkAlert('Please verify your email', 'warning')
       cy.url()
@@ -81,7 +91,12 @@ describe('Login Form - Flow Test Scenarios', () => {
 
   describe('UC-05: Password Expired', () => {
     it('should redirect to password reset for expired password', () => {
-      cy.login(users.expiredPasswordUser.email, users.expiredPasswordUser.password)
+      cy.get('[data-cy="email-input"]')
+        .type(users.expiredPasswordUser.email)
+      cy.get('[data-cy="password-input"]')
+        .type(users.expiredPasswordUser.password)
+      cy.get('[data-cy="login-button"]')
+        .click()
 
       cy.checkAlert('Your password has expired', 'warning')
       cy.get('[data-cy="close-modal"]', { timeout: 3000 })
@@ -161,30 +176,6 @@ describe('Login Form - Flow Test Scenarios', () => {
       cy.get('[data-cy="mfa-input"]')
         .should('be.visible')
       cy.checkAlert('Please enter your MFA code', 'info')
-    })
-
-    it('should refresh CAPTCHA code', () => {
-      for (let i = 0; i < 3; i++) {
-        cy.get('[data-cy="email-input"]')
-          .clear()
-          .type(users.validUser.email)
-        cy.get('[data-cy="password-input"]')
-          .clear()
-          .type('wrongpassword')
-        cy.get('[data-cy="login-button"]')
-          .click()
-        cy.wait(1000)
-      }
-
-      cy.get('[data-cy="captcha-display"]')
-        .invoke('text')
-        .then((firstCaptcha) => {
-          cy.get('[data-cy="refresh-captcha"]')
-            .click()
-          cy.get('[data-cy="captcha-display"]')
-            .invoke('text')
-            .should('not.equal', firstCaptcha)
-        })
     })
   })
 

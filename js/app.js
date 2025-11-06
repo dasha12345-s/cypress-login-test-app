@@ -1,43 +1,8 @@
-// Mock user database
-const MOCK_USERS = {
-    'user@test.com': {
-        password: 'Password123!',
-        status: 'active',
-        mfaEnabled: false,
-        emailVerified: true
-    },
-    'mfa@test.com': {
-        password: 'Password123!',
-        status: 'active',
-        mfaEnabled: true,
-        mfaCode: '123456',
-        emailVerified: true
-    },
-    'locked@test.com': {
-        password: 'Password123!',
-        status: 'locked',
-        mfaEnabled: false,
-        emailVerified: true
-    },
-    'unverified@test.com': {
-        password: 'Password123!',
-        status: 'active',
-        mfaEnabled: false,
-        emailVerified: false
-    },
-    'expired@test.com': {
-        password: 'Password123!',
-        status: 'active',
-        passwordExpired: true,
-        mfaEnabled: false,
-        emailVerified: true
-    }
-};
+// API Configuration
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // State management
 let loginAttempts = 0;
-let currentCaptcha = '';
-let showCaptcha = false;
 
 // DOM Elements
 const loginForm = document.getElementById('login-form');
@@ -45,9 +10,6 @@ const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
 const mfaInput = document.getElementById('mfa-code');
 const mfaGroup = document.getElementById('mfa-group');
-const captchaGroup = document.getElementById('captcha-group');
-const captchaDisplay = document.getElementById('captcha-display');
-const captchaInput = document.getElementById('captcha-input');
 const rememberMeCheckbox = document.getElementById('remember-me');
 const loginBtn = document.getElementById('login-btn');
 const btnText = document.getElementById('btn-text');
@@ -96,9 +58,6 @@ function setupEventListeners() {
 
     forgotPasswordForm.addEventListener('submit', handleForgotPassword);
 
-    // CAPTCHA refresh
-    document.getElementById('refresh-captcha').addEventListener('click', generateCaptcha);
-
     // SSO Buttons
     googleLoginBtn.addEventListener('click', handleGoogleLogin);
     githubLoginBtn.addEventListener('click', handleGithubLogin);
@@ -114,16 +73,6 @@ function setupEventListeners() {
 function togglePasswordVisibility() {
     const type = passwordInput.type === 'password' ? 'text' : 'password';
     passwordInput.type = type;
-}
-
-function generateCaptcha() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    currentCaptcha = '';
-    for (let i = 0; i < 6; i++) {
-        currentCaptcha += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    captchaDisplay.textContent = currentCaptcha;
-    captchaDisplay.setAttribute('data-captcha', currentCaptcha);
 }
 
 function showAlert(message, type = 'error') {
@@ -151,14 +100,6 @@ async function handleLogin(e) {
     const password = passwordInput.value;
     const mfaCode = mfaInput.value.trim();
     const rememberMe = rememberMeCheckbox.checked;
-    const captchaValue = captchaInput.value.trim();
-
-    // Validate CAPTCHA if shown
-    if (showCaptcha && captchaValue !== currentCaptcha) {
-        showAlert('Invalid CAPTCHA. Please try again.', 'error');
-        generateCaptcha();
-        return;
-    }
 
     // Basic validation
     if (!email || !password) {
@@ -168,91 +109,70 @@ async function handleLogin(e) {
 
     setLoading(true);
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        // Call login API
+        const response = await fetch(`${API_BASE_URL}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                mfaCode: mfaCode || null
+            })
+        });
 
-    const user = MOCK_USERS[email];
+        const data = await response.json();
 
-    // Check if user exists and password is correct
-    if (!user || user.password !== password) {
-        loginAttempts++;
-        attemptsCount.textContent = loginAttempts;
-        attemptsDisplay.style.display = 'block';
+        // Handle failed login
+        if (!response.ok || !data.success) {
+            // Update attempts counter
+            if (data.attempts) {
+                loginAttempts = data.attempts;
+                attemptsCount.textContent = loginAttempts;
+                attemptsDisplay.style.display = 'block';
+            }
 
-        showAlert('Invalid email or password', 'error');
+            // Check if locked
+            if (data.locked) {
+                loginBtn.disabled = true;
+                showAlert(data.message, 'error');
+            } else if (data.requiresMfa) {
+                mfaGroup.style.display = 'block';
+                showAlert(data.message, 'info');
+            } else if (data.passwordExpired) {
+                showAlert(data.message, 'warning');
+                setTimeout(() => {
+                    forgotPasswordModal.style.display = 'flex';
+                    resetEmailInput.value = email;
+                }, 2000);
+            } else {
+                showAlert(data.message, response.status === 403 ? 'warning' : 'error');
+            }
 
-        // Show CAPTCHA after 3 failed attempts
-        if (loginAttempts >= 3 && !showCaptcha) {
-            showCaptcha = true;
-            captchaGroup.style.display = 'block';
-            generateCaptcha();
-            showAlert('Too many failed attempts. Please complete the CAPTCHA.', 'warning');
+            setLoading(false);
+            return;
         }
 
-        // Lock after 5 attempts
-        if (loginAttempts >= 5) {
-            showAlert('Account temporarily locked due to too many failed attempts. Please try again later.', 'error');
-            loginBtn.disabled = true;
-        }
+        // Successful login
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem('isLoggedIn', 'true');
+        storage.setItem('userEmail', email);
+        storage.setItem('sessionType', rememberMe ? 'persistent' : 'session');
+        storage.setItem('loginTime', new Date().toISOString());
 
-        setLoading(false);
-        return;
-    }
+        showAlert('Login successful! Redirecting...', 'success');
 
-    // Check account status
-    if (user.status === 'locked') {
-        showAlert('Your account is locked. Please contact support.', 'error');
-        setLoading(false);
-        return;
-    }
-
-    // Check email verification
-    if (!user.emailVerified) {
-        showAlert('Please verify your email address. ', 'warning');
         setTimeout(() => {
-            showAlert('Please verify your email address. Check your inbox for verification link.', 'warning');
-        }, 100);
+            window.location.href = 'pages/dashboard.html';
+        }, 1500);
+
+    } catch (error) {
+        console.error('Login error:', error);
+        showAlert('An error occurred. Please try again.', 'error');
         setLoading(false);
-        return;
     }
-
-    // Check password expiration
-    if (user.passwordExpired) {
-        showAlert('Your password has expired. Redirecting to password reset...', 'warning');
-        setTimeout(() => {
-            forgotPasswordModal.style.display = 'flex';
-            resetEmailInput.value = email;
-        }, 2000);
-        setLoading(false);
-        return;
-    }
-
-    // Check MFA
-    if (user.mfaEnabled && !mfaGroup.style.display.includes('block')) {
-        mfaGroup.style.display = 'block';
-        showAlert('Please enter your MFA code', 'info');
-        setLoading(false);
-        return;
-    }
-
-    if (user.mfaEnabled && mfaCode !== user.mfaCode) {
-        showAlert('Invalid MFA code', 'error');
-        setLoading(false);
-        return;
-    }
-
-    // Successful login
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('isLoggedIn', 'true');
-    storage.setItem('userEmail', email);
-    storage.setItem('sessionType', rememberMe ? 'persistent' : 'session');
-    storage.setItem('loginTime', new Date().toISOString());
-
-    showAlert('Login successful! Redirecting...', 'success');
-
-    setTimeout(() => {
-        window.location.href = 'pages/dashboard.html';
-    }, 1500);
 }
 
 async function handleForgotPassword(e) {
@@ -264,43 +184,90 @@ async function handleForgotPassword(e) {
         return;
     }
 
-    // Simulate sending reset email
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+        });
 
-    resetMessage.style.display = 'block';
-    resetMessage.className = 'reset-message success';
-    resetMessage.textContent = 'Password reset link sent! Check your email.';
-    resetMessage.setAttribute('data-cy', 'reset-success-message');
+        const data = await response.json();
 
-    setTimeout(() => {
-        forgotPasswordModal.style.display = 'none';
-        resetMessage.style.display = 'none';
-        forgotPasswordForm.reset();
-    }, 3000);
+        resetMessage.style.display = 'block';
+        resetMessage.className = 'reset-message success';
+        resetMessage.textContent = data.message;
+        resetMessage.setAttribute('data-cy', 'reset-success-message');
+
+        setTimeout(() => {
+            forgotPasswordModal.style.display = 'none';
+            resetMessage.style.display = 'none';
+            forgotPasswordForm.reset();
+        }, 3000);
+
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        resetMessage.style.display = 'block';
+        resetMessage.className = 'reset-message error';
+        resetMessage.textContent = 'An error occurred. Please try again.';
+    }
 }
 
-function handleGoogleLogin() {
+async function handleGoogleLogin() {
     showAlert('Redirecting to Google login...', 'info');
-    // Simulate SSO redirect
-    setTimeout(() => {
-        // In real app, this would redirect to Google OAuth
-        sessionStorage.setItem('isLoggedIn', 'true');
-        sessionStorage.setItem('userEmail', 'google-user@gmail.com');
-        sessionStorage.setItem('sessionType', 'sso-google');
-        sessionStorage.setItem('loginTime', new Date().toISOString());
-        window.location.href = 'pages/dashboard.html';
-    }, 1500);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/sso/google`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('userEmail', data.user.email);
+            sessionStorage.setItem('sessionType', data.sessionType);
+            sessionStorage.setItem('loginTime', new Date().toISOString());
+
+            setTimeout(() => {
+                window.location.href = 'pages/dashboard.html';
+            }, 1500);
+        }
+    } catch (error) {
+        console.error('Google SSO error:', error);
+        showAlert('An error occurred. Please try again.', 'error');
+    }
 }
 
-function handleGithubLogin() {
+async function handleGithubLogin() {
     showAlert('Redirecting to GitHub login...', 'info');
-    // Simulate SSO redirect
-    setTimeout(() => {
-        // In real app, this would redirect to GitHub OAuth
-        sessionStorage.setItem('isLoggedIn', 'true');
-        sessionStorage.setItem('userEmail', 'github-user@github.com');
-        sessionStorage.setItem('sessionType', 'sso-github');
-        sessionStorage.setItem('loginTime', new Date().toISOString());
-        window.location.href = 'pages/dashboard.html';
-    }, 1500);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/sso/github`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('userEmail', data.user.email);
+            sessionStorage.setItem('sessionType', data.sessionType);
+            sessionStorage.setItem('loginTime', new Date().toISOString());
+
+            setTimeout(() => {
+                window.location.href = 'pages/dashboard.html';
+            }, 1500);
+        }
+    } catch (error) {
+        console.error('GitHub SSO error:', error);
+        showAlert('An error occurred. Please try again.', 'error');
+    }
 }

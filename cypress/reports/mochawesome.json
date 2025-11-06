@@ -1,0 +1,729 @@
+{
+  "stats": {
+    "suites": 13,
+    "tests": 20,
+    "passes": 15,
+    "pending": 0,
+    "failures": 5,
+    "start": "2025-11-06T19:28:55.872Z",
+    "end": "2025-11-06T19:28:57.148Z",
+    "duration": 1276,
+    "testsRegistered": 20,
+    "passPercent": 75,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "2d82dcf9-0a06-4b4f-bcbf-e5b428ca111f",
+      "title": "",
+      "fullFile": "cypress/e2e/api-tests.cy.js",
+      "file": "cypress/e2e/api-tests.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "14257a03-ce9d-4ae7-92e1-1838efcd29fd",
+          "title": "Login API Tests",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [],
+          "suites": [
+            {
+              "uuid": "83c32c23-80e0-42f7-b1a6-98ce0a967b5f",
+              "title": "API Health Check",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should return OK status from health endpoint",
+                  "fullTitle": "Login API Tests API Health Check should return OK status from health endpoint",
+                  "timedOut": null,
+                  "duration": 31,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request(`${API_BASE_URL}/health`).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body).to.have.property('status', 'OK');\n  expect(response.body).to.have.property('timestamp');\n});",
+                  "err": {},
+                  "uuid": "a8d36c09-fb22-4fa1-babf-a40356248ee5",
+                  "parentUUID": "83c32c23-80e0-42f7-b1a6-98ce0a967b5f",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "a8d36c09-fb22-4fa1-babf-a40356248ee5"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 31,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "241b4391-952e-43c5-9f76-ae26e64e4dbb",
+              "title": "POST /api/login - Successful Login",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should login successfully with valid credentials and return token",
+                  "fullTitle": "Login API Tests POST /api/login - Successful Login should login successfully with valid credentials and return token",
+                  "timedOut": null,
+                  "duration": 186,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'user@test.com',\n    password: 'Password123!'\n  }\n}).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body).to.have.property('success', true);\n  expect(response.body).to.have.property('message', 'Login successful');\n  // Check token is returned\n  expect(response.body).to.have.property('token');\n  expect(response.body.token).to.be.a('string');\n  expect(response.body.token.length).to.be.greaterThan(0);\n  expect(response.body.user).to.have.property('email', 'user@test.com');\n});",
+                  "err": {
+                    "message": "AssertionError: expected { Object (success, message, ...) } to have property 'token'",
+                    "estack": "AssertionError: expected { Object (success, message, ...) } to have property 'token'\n    at Context.eval (webpack://cypress-login-test-app/./cypress/e2e/api-tests.cy.js:32:38)\n    at getRet (http://localhost:8080/__cypress/runner/cypress_runner.js:121066:20)\n    at tryCatcher (http://localhost:8080/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:8080/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:8080/__cypress/runner/cypress_runner.js:121077:66)\n    at Context.then (http://localhost:8080/__cypress/runner/cypress_runner.js:121328:21)",
+                    "diff": null
+                  },
+                  "uuid": "2fd9c0d0-2bbc-4adb-834c-0321dd5d6572",
+                  "parentUUID": "241b4391-952e-43c5-9f76-ae26e64e4dbb",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should login successfully with MFA and return token",
+                  "fullTitle": "Login API Tests POST /api/login - Successful Login should login successfully with MFA and return token",
+                  "timedOut": null,
+                  "duration": 222,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "// First request triggers MFA requirement\ncy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'mfa@test.com',\n    password: 'Password123!'\n  }\n}).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body.success).to.be.false;\n  expect(response.body.requiresMfa).to.be.true;\n  expect(response.body.message).to.include('MFA code');\n});\n// Second request with MFA code\ncy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'mfa@test.com',\n    password: 'Password123!',\n    mfaCode: '123456'\n  }\n}).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body.success).to.be.true;\n  expect(response.body).to.have.property('token');\n  expect(response.body.token).to.be.a('string');\n});",
+                  "err": {
+                    "message": "AssertionError: expected { Object (success, message, ...) } to have property 'token'",
+                    "estack": "AssertionError: expected { Object (success, message, ...) } to have property 'token'\n    at Context.eval (webpack://cypress-login-test-app/./cypress/e2e/api-tests.cy.js:68:38)\n    at getRet (http://localhost:8080/__cypress/runner/cypress_runner.js:121066:20)\n    at tryCatcher (http://localhost:8080/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:8080/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:8080/__cypress/runner/cypress_runner.js:121077:66)\n    at Context.then (http://localhost:8080/__cypress/runner/cypress_runner.js:121328:21)",
+                    "diff": null
+                  },
+                  "uuid": "f1d871d0-99a1-4bf5-9f55-40ec948f1c9c",
+                  "parentUUID": "241b4391-952e-43c5-9f76-ae26e64e4dbb",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [],
+              "failures": [
+                "2fd9c0d0-2bbc-4adb-834c-0321dd5d6572",
+                "f1d871d0-99a1-4bf5-9f55-40ec948f1c9c"
+              ],
+              "pending": [],
+              "skipped": [],
+              "duration": 408,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "3f771919-38d3-4cb8-9ed3-5ee0aeb1c1e7",
+              "title": "POST /api/login - Failed Login Attempts",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should return 401 for invalid credentials without token",
+                  "fullTitle": "Login API Tests POST /api/login - Failed Login Attempts should return 401 for invalid credentials without token",
+                  "timedOut": null,
+                  "duration": 11,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'user@test.com',\n    password: 'WrongPassword123!'\n  },\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.status).to.eq(401);\n  expect(response.body.success).to.be.false;\n  expect(response.body.message).to.eq('Invalid email or password');\n  expect(response.body).to.have.property('attempts');\n  expect(response.body).to.not.have.property('token');\n});",
+                  "err": {},
+                  "uuid": "b6da754f-7371-479d-a0d2-fe32fb8441f2",
+                  "parentUUID": "3f771919-38d3-4cb8-9ed3-5ee0aeb1c1e7",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should require CAPTCHA after 3 failed attempts",
+                  "fullTitle": "Login API Tests POST /api/login - Failed Login Attempts should require CAPTCHA after 3 failed attempts",
+                  "timedOut": null,
+                  "duration": 20,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "const email = `test-${Date.now()}@test.com`;\n// Attempt 1-3: Wrong password\nfor (let i = 0; i < 3; i++) {\n  cy.request({\n    method: 'POST',\n    url: `${API_BASE_URL}/login`,\n    body: {\n      email: email,\n      password: 'WrongPassword'\n    },\n    failOnStatusCode: false\n  }).then(response => {\n    expect(response.status).to.eq(401);\n    expect(response.body.attempts).to.eq(i + 1);\n  });\n}\n// Attempt 4: Should require CAPTCHA\ncy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: email,\n    password: 'WrongPassword'\n  },\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.status).to.eq(401);\n  expect(response.body.requiresCaptcha).to.be.true;\n});",
+                  "err": {},
+                  "uuid": "39fd22f2-e0ea-4a4e-adde-734e2f5f051c",
+                  "parentUUID": "3f771919-38d3-4cb8-9ed3-5ee0aeb1c1e7",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should lock account after 5 failed attempts",
+                  "fullTitle": "Login API Tests POST /api/login - Failed Login Attempts should lock account after 5 failed attempts",
+                  "timedOut": null,
+                  "duration": 31,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "const email = `locktest-${Date.now()}@test.com`;\n// Attempt 1-5: Wrong password\nfor (let i = 0; i < 5; i++) {\n  cy.request({\n    method: 'POST',\n    url: `${API_BASE_URL}/login`,\n    body: {\n      email: email,\n      password: 'WrongPassword'\n    },\n    failOnStatusCode: false\n  });\n}\n// Attempt 6: Should be locked\ncy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: email,\n    password: 'WrongPassword'\n  },\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.body.locked).to.be.true;\n  expect(response.body.message).to.include('temporarily locked');\n});",
+                  "err": {},
+                  "uuid": "c165c507-d8c7-4635-8b25-fe996fb40796",
+                  "parentUUID": "3f771919-38d3-4cb8-9ed3-5ee0aeb1c1e7",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "b6da754f-7371-479d-a0d2-fe32fb8441f2",
+                "39fd22f2-e0ea-4a4e-adde-734e2f5f051c",
+                "c165c507-d8c7-4635-8b25-fe996fb40796"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 62,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "cc0b7e86-f5af-48a6-873b-c718d69fada6",
+              "title": "POST /api/login - Account Status",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should return 403 for locked account without token",
+                  "fullTitle": "Login API Tests POST /api/login - Account Status should return 403 for locked account without token",
+                  "timedOut": null,
+                  "duration": 8,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'locked@test.com',\n    password: 'Password123!'\n  },\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.status).to.eq(403);\n  expect(response.body.success).to.be.false;\n  expect(response.body.message).to.include('locked');\n  expect(response.body).to.not.have.property('token');\n});",
+                  "err": {},
+                  "uuid": "e9c51602-091a-4edf-a071-0fdc4c3b3a7a",
+                  "parentUUID": "cc0b7e86-f5af-48a6-873b-c718d69fada6",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 403 for unverified email without token",
+                  "fullTitle": "Login API Tests POST /api/login - Account Status should return 403 for unverified email without token",
+                  "timedOut": null,
+                  "duration": 9,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'unverified@test.com',\n    password: 'Password123!'\n  },\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.status).to.eq(403);\n  expect(response.body.success).to.be.false;\n  expect(response.body.message).to.include('verify your email');\n  expect(response.body).to.not.have.property('token');\n});",
+                  "err": {},
+                  "uuid": "df33669c-1432-4eb9-a43a-a31dc25f3b7c",
+                  "parentUUID": "cc0b7e86-f5af-48a6-873b-c718d69fada6",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should return 403 for expired password without token",
+                  "fullTitle": "Login API Tests POST /api/login - Account Status should return 403 for expired password without token",
+                  "timedOut": null,
+                  "duration": 9,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'expired@test.com',\n    password: 'Password123!'\n  },\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.status).to.eq(403);\n  expect(response.body.success).to.be.false;\n  expect(response.body.passwordExpired).to.be.true;\n  expect(response.body.message).to.include('password has expired');\n  expect(response.body).to.not.have.property('token');\n});",
+                  "err": {},
+                  "uuid": "f8cd0240-abe3-43c8-918e-e609cb0cae3b",
+                  "parentUUID": "cc0b7e86-f5af-48a6-873b-c718d69fada6",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "e9c51602-091a-4edf-a071-0fdc4c3b3a7a",
+                "df33669c-1432-4eb9-a43a-a31dc25f3b7c",
+                "f8cd0240-abe3-43c8-918e-e609cb0cae3b"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 26,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "cf1ef033-22d7-46a6-9db1-da73a89ed39f",
+              "title": "POST /api/login - MFA Validation",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should return 401 for invalid MFA code without token",
+                  "fullTitle": "Login API Tests POST /api/login - MFA Validation should return 401 for invalid MFA code without token",
+                  "timedOut": null,
+                  "duration": 12,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'mfa@test.com',\n    password: 'Password123!',\n    mfaCode: '000000'\n  },\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.status).to.eq(401);\n  expect(response.body.success).to.be.false;\n  expect(response.body.message).to.eq('Invalid MFA code');\n  expect(response.body).to.not.have.property('token');\n});",
+                  "err": {},
+                  "uuid": "3fb649dc-a2e3-43b9-9bcd-0ece3929845a",
+                  "parentUUID": "cf1ef033-22d7-46a6-9db1-da73a89ed39f",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "3fb649dc-a2e3-43b9-9bcd-0ece3929845a"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 12,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "3941a0e6-9906-444e-83fc-3e80227d1687",
+              "title": "GET /api/captcha",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should generate a CAPTCHA code",
+                  "fullTitle": "Login API Tests GET /api/captcha should generate a CAPTCHA code",
+                  "timedOut": null,
+                  "duration": 13,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request(`${API_BASE_URL}/captcha`).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body).to.have.property('captcha');\n  expect(response.body.captcha).to.have.length(6);\n  expect(response.body.captcha).to.match(/^[A-Z0-9]{6}$/);\n});",
+                  "err": {},
+                  "uuid": "6460737c-1da9-4018-899d-3404f4e99a7c",
+                  "parentUUID": "3941a0e6-9906-444e-83fc-3e80227d1687",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should generate different CAPTCHA codes",
+                  "fullTitle": "Login API Tests GET /api/captcha should generate different CAPTCHA codes",
+                  "timedOut": null,
+                  "duration": 38,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "let firstCaptcha;\ncy.request(`${API_BASE_URL}/captcha`).then(response => {\n  firstCaptcha = response.body.captcha;\n});\ncy.request(`${API_BASE_URL}/captcha`).then(response => {\n  expect(response.body.captcha).to.be.a('string');\n});",
+                  "err": {},
+                  "uuid": "209bfa06-11b3-476c-9a15-c41c2b3b18ba",
+                  "parentUUID": "3941a0e6-9906-444e-83fc-3e80227d1687",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "6460737c-1da9-4018-899d-3404f4e99a7c",
+                "209bfa06-11b3-476c-9a15-c41c2b3b18ba"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 51,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "99991a4f-45eb-4399-ab04-82e01d0d0ed2",
+              "title": "POST /api/sso/google",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should handle Google SSO login and return token",
+                  "fullTitle": "Login API Tests POST /api/sso/google should handle Google SSO login and return token",
+                  "timedOut": null,
+                  "duration": 150,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/sso/google`\n}).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body.success).to.be.true;\n  expect(response.body.message).to.include('Google');\n  expect(response.body.sessionType).to.eq('SSO-GOOGLE');\n  expect(response.body).to.have.property('token');\n  expect(response.body.token).to.be.a('string');\n  expect(response.body.user).to.have.property('email');\n});",
+                  "err": {
+                    "message": "AssertionError: expected { Object (success, message, ...) } to have property 'token'",
+                    "estack": "AssertionError: expected { Object (success, message, ...) } to have property 'token'\n    at Context.eval (webpack://cypress-login-test-app/./cypress/e2e/api-tests.cy.js:269:38)\n    at getRet (http://localhost:8080/__cypress/runner/cypress_runner.js:121066:20)\n    at tryCatcher (http://localhost:8080/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:8080/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:8080/__cypress/runner/cypress_runner.js:121077:66)\n    at Context.then (http://localhost:8080/__cypress/runner/cypress_runner.js:121328:21)",
+                    "diff": null
+                  },
+                  "uuid": "154bb2d4-d079-4e44-a79f-102df0ea52f3",
+                  "parentUUID": "99991a4f-45eb-4399-ab04-82e01d0d0ed2",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [],
+              "failures": [
+                "154bb2d4-d079-4e44-a79f-102df0ea52f3"
+              ],
+              "pending": [],
+              "skipped": [],
+              "duration": 150,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "504bf3c7-f273-44d9-8965-2cd7fb565574",
+              "title": "POST /api/sso/github",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should handle GitHub SSO login and return token",
+                  "fullTitle": "Login API Tests POST /api/sso/github should handle GitHub SSO login and return token",
+                  "timedOut": null,
+                  "duration": 140,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/sso/github`\n}).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body.success).to.be.true;\n  expect(response.body.message).to.include('GitHub');\n  expect(response.body.sessionType).to.eq('SSO-GITHUB');\n  expect(response.body).to.have.property('token');\n  expect(response.body.token).to.be.a('string');\n  expect(response.body.user).to.have.property('email');\n});",
+                  "err": {
+                    "message": "AssertionError: expected { Object (success, message, ...) } to have property 'token'",
+                    "estack": "AssertionError: expected { Object (success, message, ...) } to have property 'token'\n    at Context.eval (webpack://cypress-login-test-app/./cypress/e2e/api-tests.cy.js:286:38)\n    at getRet (http://localhost:8080/__cypress/runner/cypress_runner.js:121066:20)\n    at tryCatcher (http://localhost:8080/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:8080/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:8080/__cypress/runner/cypress_runner.js:121077:66)\n    at Context.then (http://localhost:8080/__cypress/runner/cypress_runner.js:121328:21)",
+                    "diff": null
+                  },
+                  "uuid": "1fad2fc3-2a67-4add-9c9e-7b1034037509",
+                  "parentUUID": "504bf3c7-f273-44d9-8965-2cd7fb565574",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [],
+              "failures": [
+                "1fad2fc3-2a67-4add-9c9e-7b1034037509"
+              ],
+              "pending": [],
+              "skipped": [],
+              "duration": 140,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "815a1b78-c9b6-4bc7-8628-35f15169a722",
+              "title": "POST /api/forgot-password",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should send password reset link",
+                  "fullTitle": "Login API Tests POST /api/forgot-password should send password reset link",
+                  "timedOut": null,
+                  "duration": 11,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/forgot-password`,\n  body: {\n    email: 'user@test.com'\n  }\n}).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body.success).to.be.true;\n  expect(response.body.message).to.include('reset link sent');\n});",
+                  "err": {},
+                  "uuid": "371b6372-bd28-40e8-8678-da70db3cd831",
+                  "parentUUID": "815a1b78-c9b6-4bc7-8628-35f15169a722",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should accept any email for forgot password",
+                  "fullTitle": "Login API Tests POST /api/forgot-password should accept any email for forgot password",
+                  "timedOut": null,
+                  "duration": 7,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/forgot-password`,\n  body: {\n    email: 'nonexistent@test.com'\n  }\n}).then(response => {\n  expect(response.status).to.eq(200);\n  expect(response.body.success).to.be.true;\n});",
+                  "err": {},
+                  "uuid": "aa750439-a80d-42c1-8709-1b97f737c99f",
+                  "parentUUID": "815a1b78-c9b6-4bc7-8628-35f15169a722",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "371b6372-bd28-40e8-8678-da70db3cd831",
+                "aa750439-a80d-42c1-8709-1b97f737c99f"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 18,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "f6f1deff-8644-47af-94f8-d3f3c2e4cc6e",
+              "title": "JWT Token Validation",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should return a valid JWT token structure",
+                  "fullTitle": "Login API Tests JWT Token Validation should return a valid JWT token structure",
+                  "timedOut": null,
+                  "duration": 162,
+                  "state": "failed",
+                  "speed": null,
+                  "pass": false,
+                  "fail": true,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'user@test.com',\n    password: 'Password123!'\n  }\n}).then(response => {\n  const token = response.body.token;\n  // JWT token should have 3 parts separated by dots\n  const parts = token.split('.');\n  expect(parts).to.have.length(3);\n  // Each part should be base64 encoded\n  parts.forEach(part => {\n    expect(part).to.match(/^[A-Za-z0-9_-]+$/);\n  });\n});",
+                  "err": {
+                    "message": "TypeError: Cannot read properties of undefined (reading 'split')",
+                    "estack": "TypeError: Cannot read properties of undefined (reading 'split')\n    at Context.eval (webpack://cypress-login-test-app/./cypress/e2e/api-tests.cy.js:335:28)\n    at getRet (http://localhost:8080/__cypress/runner/cypress_runner.js:121066:20)\n    at tryCatcher (http://localhost:8080/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise.attempt.Promise.try (http://localhost:8080/__cypress/runner/cypress_runner.js:4285:29)\n    at Context.thenFn (http://localhost:8080/__cypress/runner/cypress_runner.js:121077:66)\n    at Context.then (http://localhost:8080/__cypress/runner/cypress_runner.js:121328:21)\n    at wrapped (http://localhost:8080/__cypress/runner/cypress_runner.js:141671:19)\n    at <unknown> (http://localhost:8080/__cypress/runner/cypress_runner.js:147616:15)\n    at tryCatcher (http://localhost:8080/__cypress/runner/cypress_runner.js:1777:23)",
+                    "diff": null
+                  },
+                  "uuid": "679b2014-9ff1-4e7a-b3a8-a23fba16b55a",
+                  "parentUUID": "f6f1deff-8644-47af-94f8-d3f3c2e4cc6e",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [],
+              "failures": [
+                "679b2014-9ff1-4e7a-b3a8-a23fba16b55a"
+              ],
+              "pending": [],
+              "skipped": [],
+              "duration": 162,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "ea5ee832-d7ef-42ae-a374-100b9b2e75ac",
+              "title": "API Response Time",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should respond to login request within acceptable time",
+                  "fullTitle": "Login API Tests API Response Time should respond to login request within acceptable time",
+                  "timedOut": null,
+                  "duration": 9,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "const startTime = Date.now();\ncy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {\n    email: 'user@test.com',\n    password: 'Password123!'\n  }\n}).then(response => {\n  const endTime = Date.now();\n  const duration = endTime - startTime;\n  expect(response.status).to.eq(200);\n  expect(duration).to.be.lessThan(2000);\n});",
+                  "err": {},
+                  "uuid": "055ad4dd-b0db-48fa-b2ec-3f7cb342da66",
+                  "parentUUID": "ea5ee832-d7ef-42ae-a374-100b9b2e75ac",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "055ad4dd-b0db-48fa-b2ec-3f7cb342da66"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 9,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            },
+            {
+              "uuid": "e37fe7cb-18d5-415e-8fb6-ebde5b468041",
+              "title": "API Error Handling",
+              "fullFile": "",
+              "file": "",
+              "beforeHooks": [],
+              "afterHooks": [],
+              "tests": [
+                {
+                  "title": "should handle missing request body",
+                  "fullTitle": "Login API Tests API Error Handling should handle missing request body",
+                  "timedOut": null,
+                  "duration": 7,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  body: {},\n  failOnStatusCode: false\n}).then(response => {\n  expect(response.status).to.eq(401);\n  expect(response.body).to.not.have.property('token');\n});",
+                  "err": {},
+                  "uuid": "a2c93f73-cd6b-4336-846d-f4658d93b76a",
+                  "parentUUID": "e37fe7cb-18d5-415e-8fb6-ebde5b468041",
+                  "isHook": false,
+                  "skipped": false
+                },
+                {
+                  "title": "should handle malformed JSON",
+                  "fullTitle": "Login API Tests API Error Handling should handle malformed JSON",
+                  "timedOut": null,
+                  "duration": 9,
+                  "state": "passed",
+                  "speed": "fast",
+                  "pass": true,
+                  "fail": false,
+                  "pending": false,
+                  "context": null,
+                  "code": "cy.request({\n  method: 'POST',\n  url: `${API_BASE_URL}/login`,\n  headers: {\n    'Content-Type': 'application/json'\n  },\n  body: 'not valid json',\n  failOnStatusCode: false\n}).then(response => {\n  expect([400, 500]).to.include(response.status);\n});",
+                  "err": {},
+                  "uuid": "a2e08793-dadf-4070-adbc-dc64c2f4b7e3",
+                  "parentUUID": "e37fe7cb-18d5-415e-8fb6-ebde5b468041",
+                  "isHook": false,
+                  "skipped": false
+                }
+              ],
+              "suites": [],
+              "passes": [
+                "a2c93f73-cd6b-4336-846d-f4658d93b76a",
+                "a2e08793-dadf-4070-adbc-dc64c2f4b7e3"
+              ],
+              "failures": [],
+              "pending": [],
+              "skipped": [],
+              "duration": 16,
+              "root": false,
+              "rootEmpty": false,
+              "_timeout": 2000
+            }
+          ],
+          "passes": [],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 0,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.2.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": false,
+        "html": true,
+        "json": true,
+        "charts": true,
+        "reportPageTitle": "Cypress Login Test Report",
+        "embeddedScreenshots": true,
+        "inlineAssets": true
+      },
+      "version": "6.3.0"
+    }
+  }
+}
